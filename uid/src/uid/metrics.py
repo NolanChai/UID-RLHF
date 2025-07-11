@@ -7,6 +7,7 @@ from transformers.utils.logging import disable_progress_bar
 from huggingface_hub import snapshot_download
 from transformers.utils import logging as hf_logging
 from tqdm.auto import tqdm
+import pandas as pd
 
 from rich.progress import (
     SpinnerColumn,
@@ -91,3 +92,19 @@ class Tokenizer:
 
         # Pad the first token with None or 0.0 (no context)
         return [None] + surprisal_bits.cpu().tolist()
+
+    def surprisal_dataframe(self, 
+                            df: pd.DataFrame,
+                            text_col: str,
+                            *,
+                            out_col: str = "surprisal",
+                            show_progress: bool = True,
+                            ) -> pd.DataFrame:
+        iterator = (
+                tqdm(df[text_col].items(), total=len(df), desc="Calculating surprisal")
+                if show_progress else df[text_col].items()
+            )
+        
+        # Calculate surprisal for each row
+        df[out_col] = [self.surprisal(txt) for _, txt in iterator]
+        return df
