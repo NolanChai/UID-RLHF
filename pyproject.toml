@@ -5,6 +5,7 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "hf-xet>=1.1.5",
     "huggingface-hub>=0.33.2",
     "numpy>=2.3.1",
     "rich>=14.0.0",
