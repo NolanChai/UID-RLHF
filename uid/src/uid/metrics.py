@@ -5,7 +5,8 @@ import torch.nn.functional as F
 from transformers import AutoTokenizer as HFTokenizer, AutoModelForCausalLM
 from transformers.utils.logging import disable_progress_bar
 from huggingface_hub import snapshot_download
-from tqdm.rich import tqdm as _tqdm_rich
+from transformers.utils import logging as hf_logging
+from tqdm.auto import tqdm
 
 from rich.progress import (
     SpinnerColumn,
@@ -19,25 +20,11 @@ from rich.progress import (
 import warnings
 from tqdm import TqdmExperimentalWarning
 warnings.filterwarnings("ignore", category=TqdmExperimentalWarning)
+hf_logging.set_verbosity_error()
 
 # Disable symlinks warning
 import os
 os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
-
-class TqdmRichBar(_tqdm_rich):
-    def __init__(self, *args, **kwargs):
-        # If someone passed a custom progress spec, respect it; otherwise use ours:
-        if "progress" not in kwargs:
-            kwargs["progress"] = (
-                SpinnerColumn(), 
-                TextColumn("[progress.description]{task.description}"), 
-                BarColumn(), 
-                TextColumn("{task.percentage:>3.0f}%"),
-                # DownloadColumn(), 
-                # TransferSpeedColumn(),
-                TimeRemainingColumn()
-            )
-        super().__init__(*args, **kwargs)
 
 class Tokenizer:
     def __init__(self, model_name: str = "gpt2", device: str = None):
@@ -49,11 +36,7 @@ class Tokenizer:
         # Disable huggingface progress bars
         disable_progress_bar()
 
-        repo_dir = snapshot_download(
-            repo_id=model_name,
-            local_files_only=False,
-            tqdm_class=TqdmRichBar,
-        )
+        repo_dir = snapshot_download(repo_id=model_name, tqdm_class=tqdm)
 
         # Fetch tokenizer from Huggingface
         self.tokenizer = HFTokenizer.from_pretrained(model_name, local_files_only = True)
