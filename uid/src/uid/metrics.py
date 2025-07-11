@@ -20,6 +20,10 @@ import warnings
 from tqdm import TqdmExperimentalWarning
 warnings.filterwarnings("ignore", category=TqdmExperimentalWarning)
 
+# Disable symlinks warning
+import os
+os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
+
 class TqdmRichBar(_tqdm_rich):
     def __init__(self, *args, **kwargs):
         # If someone passed a custom progress spec, respect it; otherwise use ours:
